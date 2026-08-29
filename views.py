@@ -29,6 +29,12 @@ def criar():
     db.session.add(novo_jogo)
     db.session.commit()
 
+    #esse comadando é um meio para guardar as imagens no proprio disco do computador, porem existe outro meio de guardar as imagens no proprio banco de dados, porem é mais complexo
+    #e depende da situação aplicada, nesse caso não é necessario pois nao seram muitas imagens, porem a longo prazo provavelmente sera necessario um banco de dados so para imagens
+    arquivo = request.files['arquivo']
+    upload_path = app.config['UPLOAD_PATH']
+    arquivo.save(f'{upload_path}/capa{novo_jogo.id}.jpg')
+
     return redirect(url_for('index'))
 
 @app.route('/editar/<int:id>', methods=['GET','POST'])
@@ -40,11 +46,33 @@ def editar(id):
 
 @app.route('/atualizar', methods=['POST'])
 def atualizar():
-    pass
+    jogo = Jogos.query.filter_by(id=request.form['id']).first()
+    jogo.nome = request.form['nome']
+    jogo.categoria = request.form['categoria']
+    jogo.console = request.form['console']
+
+    db.session.add(jogo)
+    db.session.commit()
+
+    return redirect(url_for('index'))
+
+@app.route('/deletar/<int:id>')
+def deletar(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        return redirect(url_for('login'))
+
+    Jogos.query.filter_by(id=id).delete()
+    db.session.commit()
+    flash('Jogo deletado com sucesso')
+    return redirect(url_for('index'))
 
 @app.route('/login')
 def login():
     proxima = request.args.get('proxima')
+
+    if not proxima:
+            proxima = url_for('index')
+
     return render_template('login.html', proxima=proxima)
 
 @app.route('/autenticar', methods=['POST'])
@@ -55,9 +83,13 @@ def autenticar():
             session['usuario_logado'] = usuario.nickname
             flash('Bem vindo, {}'.format(session['usuario_logado']))
             proxima_pagina = request.form['proxima']
+            print('PROXIMA PÁGINA:', proxima_pagina)
             return redirect('{}'.format(proxima_pagina))
+        else:
+            flash('Senha incorreta')
+            return redirect(url_for('login'))
     else:
-        flash('Senha incorreta')
+        flash('Usuário não encontrado')
         return redirect(url_for('login'))
 
 @app.route('/logout')
