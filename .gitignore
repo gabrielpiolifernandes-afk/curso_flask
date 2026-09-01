@@ -219,3 +219,6 @@ __marimo__/
 
 # Local configuration file
 config.py
+
+#folder for uploaded files
+uploads/

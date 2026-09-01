@@ -4,9 +4,9 @@ from mysql.connector import errorcode
 print("Conectando...")
 try:
       conn = mysql.connector.connect(
-            host='127.0.0.1',
-            user='root',
-            password='NewMsql3000!'
+            host='seu host',
+            user='seu usuario',
+            password='sua senha'
       )
 except mysql.connector.Error as err:
       if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
